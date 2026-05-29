@@ -1,14 +1,20 @@
-import { Button, Group, Text } from '@mantine/core'
+import { Button, em, Group, Text } from '@mantine/core'
 import { PiClockClockwise } from 'react-icons/pi'
 import { useTranslation } from 'react-i18next'
+import { useMediaQuery } from '@mantine/hooks'
+import { modals } from '@mantine/modals'
+import { TbDots } from 'react-icons/tb'
 
+import { BulkUsersActionsWidget } from '@widgets/dashboard/users/bulk-users-actions/bulk-users-actions.widget'
 import { useBulkUsersActionsStoreActions } from '@entities/dashboard/users/bulk-users-actions-store'
+import { BaseOverlayHeader } from '@shared/ui/overlays/base-overlay-header'
 
 import { IProps } from './interfaces/props.interface'
 
 export const UsersTableSelectionFeature = (props: IProps) => {
     const { resetRowSelection, toggleAllPageRowsSelected } = props
     const { t } = useTranslation()
+    const isMobile = useMediaQuery(`(max-width: ${em(768)})`)
 
     const bulkUsersActionsStoreActions = useBulkUsersActionsStoreActions()
 
@@ -38,7 +44,32 @@ export const UsersTableSelectionFeature = (props: IProps) => {
                 <Button
                     color="green"
                     leftSection={<PiClockClockwise />}
-                    onClick={() => bulkUsersActionsStoreActions.setIsDrawerOpen(true)}
+                    onClick={() =>
+                        modals.open({
+                            title: (
+                                <BaseOverlayHeader
+                                    iconColor="cyan"
+                                    IconComponent={TbDots}
+                                    iconVariant="soft"
+                                    subtitle={t(
+                                        'bulk-user-actions.actions.tab.feature.perform-action-on-users',
+                                        {
+                                            usersCount: usersToUpdate
+                                        }
+                                    )}
+                                    title={t('bulk-user-actions-drawer.widget.bulk-user-actions')}
+                                    titleOrder={5}
+                                />
+                            ),
+                            size: 'lg',
+                            fullScreen: isMobile,
+                            centered: true,
+                            onClose: () => {
+                                resetRowSelection()
+                            },
+                            children: <BulkUsersActionsWidget isMobile={isMobile} />
+                        })
+                    }
                     size="sm"
                     variant="subtle"
                 >

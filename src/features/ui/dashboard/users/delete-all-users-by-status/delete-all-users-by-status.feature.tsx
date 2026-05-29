@@ -34,7 +34,7 @@ export const DeleteAllUsersByStatusFeature = (props: IProps) => {
 
                 return { notificationId }
             },
-            onSuccess: (data, context: unknown) => {
+            onSuccess: (data, _variables, context: unknown) => {
                 if (context && typeof context === 'object' && 'notificationId' in context) {
                     notifications.update({
                         icon: <IconCheck size={18} />,
@@ -52,7 +52,7 @@ export const DeleteAllUsersByStatusFeature = (props: IProps) => {
                     })
                 }
             },
-            onError: (error, context: unknown) => {
+            onError: (error, _variables, context: unknown) => {
                 if (context && typeof context === 'object' && 'notificationId' in context) {
                     notifications.update({
                         id: context.notificationId as string,
@@ -78,7 +78,7 @@ export const DeleteAllUsersByStatusFeature = (props: IProps) => {
                 cancel: t('common.cancel')
             },
             centered: true,
-            confirmProps: { color: 'red' },
+            confirmProps: { color: 'red', variant: 'soft' },
             onConfirm: () =>
                 selectedStatus && deleteUsersByStatus({ variables: { status: selectedStatus } })
         })

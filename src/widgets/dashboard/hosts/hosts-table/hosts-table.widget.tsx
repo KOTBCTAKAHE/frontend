@@ -16,14 +16,17 @@ import { GetAllHostsCommand } from '@remnawave/backend-contract'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { Box, Container, Stack } from '@mantine/core'
+import { useSearchParams } from 'react-router-dom'
 import { useListState } from '@mantine/hooks'
 import { motion } from 'framer-motion'
 
 import { MultiSelectHostsFeature } from '@features/dashboard/hosts/multi-select-hosts/multi-select-hosts.feature'
+import { MODALS, useModalsStoreOpenWithData } from '@entities/dashboard/modal-store'
 import { HostsFiltersFeature } from '@features/dashboard/hosts/hosts-filters'
 import { HostCardWidget } from '@widgets/dashboard/hosts/host-card'
 import { useGetNodes, useReorderHosts } from '@shared/api/hooks'
 import { EmptyPageLayout } from '@shared/ui/layouts/empty-page'
+import { SEARCH_PARAMS } from '@shared/constants/search-params'
 import { useIsMobile } from '@shared/hooks'
 
 import { IProps } from './interfaces'
@@ -37,10 +40,13 @@ export const HostsTableWidget = memo((props: IProps) => {
     const [searchValue, setSearchValue] = useState<null | string>(null)
     const [searchAddressValue, setSearchAddressValue] = useState<null | string>(null)
 
+    const openModalWithData = useModalsStoreOpenWithData()
+
     const [highlightedHost, setHighlightedHost] = useState<null | string>(null)
     const [scrollMargin, setScrollMargin] = useState(0)
     const listRef = useRef<HTMLDivElement | null>(null)
     const isMobile = useIsMobile()
+    const [searchParams, setSearchParams] = useSearchParams()
 
     const { data: nodes } = useGetNodes()
     const { mutate: reorderHosts } = useReorderHosts()
@@ -50,6 +56,20 @@ export const HostsTableWidget = memo((props: IProps) => {
             setScrollMargin(listRef.current.offsetTop)
         }
     }, [])
+
+    useEffect(() => {
+        if (!searchParams.get(SEARCH_PARAMS.HOST)) return
+        const hostUuid = searchParams.get(SEARCH_PARAMS.HOST)
+        if (!hostUuid) return
+
+        const host = state.find((host) => host.uuid === hostUuid)
+        if (!host) return
+
+        openModalWithData(MODALS.EDIT_HOST_MODAL, host)
+
+        searchParams.delete(SEARCH_PARAMS.HOST)
+        setSearchParams(searchParams)
+    }, [searchParams])
 
     const virtualizer = useWindowVirtualizer({
         count: state.length,

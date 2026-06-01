@@ -20,9 +20,14 @@ import {
     TbMask,
     TbStar
 } from 'react-icons/tb'
+import {
+    GetAllHostsCommand,
+    GetAllNodesCommand,
+    GetConfigProfilesCommand
+} from '@remnawave/backend-contract'
 import { PiLock, PiNetwork, PiProhibit, PiPulse, PiTag } from 'react-icons/pi'
-import { CSSProperties, useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { createSearchParams, useNavigate } from 'react-router-dom'
+import { CSSProperties, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { useTranslation } from 'react-i18next'
 import { RiDraggable } from 'react-icons/ri'
@@ -33,12 +38,25 @@ import cx from 'clsx'
 import { MODALS, useModalsStoreOpenWithData } from '@entities/dashboard/modal-store'
 import { resolveCountryCode } from '@shared/utils/misc/resolve-country-code'
 import { SEARCH_PARAMS } from '@shared/constants/search-params'
+import { openOrNavigate } from '@shared/utils/open-or-navigate'
 import { useHostsStoreFilters } from '@entities/dashboard'
 import { XrayLogo } from '@shared/ui/logos'
 import { useIsMobile } from '@shared/hooks'
+import { ROUTES } from '@shared/constants'
 
 import classes from './HostCard.module.css'
-import { IProps } from './interfaces'
+
+export interface IProps {
+    configProfiles: GetConfigProfilesCommand.Response['response']['configProfiles'] | undefined
+    isDragOverlay?: boolean
+    isHighlighted?: boolean
+    isSelected?: boolean
+    item: GetAllHostsCommand.Response['response'][number]
+    nodesByUuid: Map<string, GetAllNodesCommand.Response['response'][number]>
+    onSelect?: () => void
+    openExternal?: boolean
+    viewOnly?: boolean
+}
 
 export function HostCardWidget(props: IProps) {
     const {
@@ -48,12 +66,13 @@ export function HostCardWidget(props: IProps) {
         isSelected,
         onSelect,
         isDragOverlay = false,
-        isHighlighted = false
+        isHighlighted = false,
+        viewOnly = false,
+        openExternal = false
     } = props
 
     const { t } = useTranslation()
-
-    const [searchParams, setSearchParams] = useSearchParams()
+    const navigate = useNavigate()
 
     const filters = useHostsStoreFilters()
 
@@ -89,17 +108,19 @@ export function HostCardWidget(props: IProps) {
     }
 
     const handleEdit = () => {
+        if (openExternal) {
+            openOrNavigate(
+                `${ROUTES.DASHBOARD.MANAGEMENT.HOSTS}?${createSearchParams({
+                    [SEARCH_PARAMS.HOST]: item.uuid
+                })}`,
+                navigate
+            )
+
+            return
+        }
+
         openModalWithData(MODALS.EDIT_HOST_MODAL, item)
     }
-
-    useEffect(() => {
-        if (searchParams.get(SEARCH_PARAMS.HOST) === item.uuid) {
-            handleEdit()
-
-            searchParams.delete(SEARCH_PARAMS.HOST)
-            setSearchParams(searchParams)
-        }
-    }, [searchParams])
 
     if (!configProfiles) {
         return null
@@ -140,30 +161,35 @@ export function HostCardWidget(props: IProps) {
             >
                 <Stack gap="sm">
                     <Group justify="space-between" wrap="nowrap">
-                        <Group gap="sm" wrap="nowrap">
-                            <Checkbox
-                                checked={isSelected}
-                                onChange={(e) => {
-                                    e.stopPropagation()
-                                    onSelect?.()
-                                }}
-                                size="md"
-                                styles={{
-                                    input: { cursor: 'pointer' }
-                                }}
-                            />
-                            <Box
-                                {...(isDragOverlay ? {} : attributes)}
-                                {...(isDragOverlay ? {} : listeners)}
-                                className={classes.mobileDragHandle}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                {!isFiltered && <RiDraggable size={px('1.2rem')} />}
-                                {isFiltered && (
-                                    <PiLock className={classes.lockedIcon} size={px('1.2rem')} />
-                                )}
-                            </Box>
-                        </Group>
+                        {!viewOnly && (
+                            <Group gap="sm" wrap="nowrap">
+                                <Checkbox
+                                    checked={isSelected}
+                                    onChange={(e) => {
+                                        e.stopPropagation()
+                                        onSelect?.()
+                                    }}
+                                    size="md"
+                                    styles={{
+                                        input: { cursor: 'pointer' }
+                                    }}
+                                />
+                                <Box
+                                    {...(isDragOverlay ? {} : attributes)}
+                                    {...(isDragOverlay ? {} : listeners)}
+                                    className={classes.mobileDragHandle}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {!isFiltered && <RiDraggable size={px('1.2rem')} />}
+                                    {isFiltered && (
+                                        <PiLock
+                                            className={classes.lockedIcon}
+                                            size={px('1.2rem')}
+                                        />
+                                    )}
+                                </Box>
+                            </Group>
+                        )}
 
                         <Group gap="xs">
                             {item.tag && (
@@ -282,19 +308,21 @@ export function HostCardWidget(props: IProps) {
             style={style}
         >
             <Group gap="md" w="100%" wrap="nowrap">
-                <Group gap="xs" wrap="nowrap">
-                    <Checkbox checked={isSelected} onChange={onSelect} size="md" />
-                    <Box
-                        {...(isDragOverlay ? {} : attributes)}
-                        {...(isDragOverlay ? {} : listeners)}
-                        className={classes.dragHandle}
-                    >
-                        {!isFiltered && <RiDraggable color="white" size="24px" />}
-                        {isFiltered && (
-                            <PiLock className={classes.lockedIcon} color="white" size="24px" />
-                        )}
-                    </Box>
-                </Group>
+                {!viewOnly && (
+                    <Group gap="xs" wrap="nowrap">
+                        <Checkbox checked={isSelected} onChange={onSelect} size="md" />
+                        <Box
+                            {...(isDragOverlay ? {} : attributes)}
+                            {...(isDragOverlay ? {} : listeners)}
+                            className={classes.dragHandle}
+                        >
+                            {!isFiltered && <RiDraggable color="white" size="24px" />}
+                            {isFiltered && (
+                                <PiLock className={classes.lockedIcon} color="white" size="24px" />
+                            )}
+                        </Box>
+                    </Group>
+                )}
 
                 <Stack
                     className={classes.contentArea}

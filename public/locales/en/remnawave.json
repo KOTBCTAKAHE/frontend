@@ -431,7 +431,9 @@
         "hidden-host-description": "By default, Remnawave will not include hidden hosts in the subscription. Hidden host can be used with Mihomo and Xray-Json Advanced, Raw.",
         "server-description-1": "In supported clients, the protocol name (e.g. vless) will be replaced with the description specified here.",
         "server-description-2": "Not all client applications support this feature. For more details, refer to the documentation of the apps listed below.",
-        "supported-clients": "Supported clients"
+        "supported-clients": "Supported clients",
+        "pinned-peer-cert-sha256-description": "Specify the SHA256 fingerprint of the peer certificate. This is used for certificate pinning to ensure the connection is made to the expected server. Provide the fingerprint as a hexadecimal string.",
+        "verify-peer-cert-by-name-description": "Verify the peer certificate using the specified domain name. This will check that the certificate's CN or SAN matches the provided name. Leave empty to disable this verification."
     },
     "base-node-form": {
         "country": "Country",

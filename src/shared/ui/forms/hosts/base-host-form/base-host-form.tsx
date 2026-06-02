@@ -289,6 +289,48 @@ export const BaseHostForm = <T extends CreateHostCommand.Request | UpdateHostCom
         )
     }
 
+    const pinnedPeerCertSha256HoverCard = () => {
+        return (
+            <HoverCard shadow="md" width={280} withArrow>
+                <HoverCard.Target>
+                    <ActionIcon color="gray" size="xs" variant="subtle">
+                        <HiQuestionMarkCircle size={20} />
+                    </ActionIcon>
+                </HoverCard.Target>
+                <HoverCard.Dropdown>
+                    <Stack gap="md">
+                        <Stack gap="sm">
+                            <Text c="dimmed" size="sm">
+                                {t('base-host-form.pinned-peer-cert-sha256-description')}
+                            </Text>
+                        </Stack>
+                    </Stack>
+                </HoverCard.Dropdown>
+            </HoverCard>
+        )
+    }
+
+    const verifyPeerCertByNameHoverCard = () => {
+        return (
+            <HoverCard shadow="md" width={280} withArrow>
+                <HoverCard.Target>
+                    <ActionIcon color="gray" size="xs" variant="subtle">
+                        <HiQuestionMarkCircle size={20} />
+                    </ActionIcon>
+                </HoverCard.Target>
+                <HoverCard.Dropdown>
+                    <Stack gap="md">
+                        <Stack gap="sm">
+                            <Text c="dimmed" size="sm">
+                                {t('base-host-form.verify-peer-cert-by-name-description')}
+                            </Text>
+                        </Stack>
+                    </Stack>
+                </HoverCard.Dropdown>
+            </HoverCard>
+        )
+    }
+
     const shuffleHostHoverCard = () => {
         return (
             <HoverCard shadow="md" width={280} withArrow>
